@@ -5,6 +5,33 @@ import { BuildOptions } from "./types/types";
 export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
     const isDev = options.mode === 'development';
 
+    const assetLoader =  {
+        test: /\.(png|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+     }
+
+    const svgrLoader =  {
+        test: /\.svg$/i,
+        use: [
+            { 
+                loader: '@svgr/webpack', 
+                options: { 
+                    icon: true,
+                    svgConfig: {
+                        plugins: [
+                            {
+                                name: 'convertColors',
+                                params: {
+                                    currentColor: true,
+                                }
+                            }
+                        ]
+                    }
+                } 
+            }
+        ],
+    }
+
     const cssLoaderWithModules = {
         loader: "css-loader",
         options: {
@@ -26,16 +53,23 @@ export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
         ],
       }
 
-      const tsLoader =    {
-            // ts-loader умеет работать c JSX
-            // Если б мы не использовали тайпскрипт: нужен был бы babel-loader
-            test: /\.tsx?$/,
-            use: 'ts-loader',
-            exclude: /node_modules/,
+      const tsLoader =  {   
+        exclude: /nodu_modules/,
+        test: /\.tsx?$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true
+            }
+          }
+        ]
       }
 
     return [
+        assetLoader,
         scssLoader,
-        tsLoader
+        tsLoader,
+        svgrLoader,
     ]
 }
