@@ -1,6 +1,8 @@
 import {ModuleOptions} from "webpack";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import ReactRefreshPlugin from "react-refresh-typescript";
 import { BuildOptions } from "./types/types";
+import { buildBabelLoader } from "./babel/buildBabelLoader";
 
 export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
     const isDev = options.mode === 'development';
@@ -54,22 +56,28 @@ export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
       }
 
       const tsLoader =  {   
-        exclude: /nodu_modules/,
+        exclude: /node_modules/,
         test: /\.tsx?$/,
         use: [
           {
             loader: 'ts-loader',
             options: {
-              transpileOnly: true
+              transpileOnly: true,
+              getCustomTransformers: () => ({
+                before: [isDev && ReactRefreshPlugin()].filter(Boolean),
+              }),
             }
           }
         ]
       }
 
+      const babelLoader = buildBabelLoader({ mode: options.mode });
+
     return [
         assetLoader,
         scssLoader,
-        tsLoader,
-        svgrLoader,
+        // tsLoader,
+        babelLoader,
+        svgrLoader
     ]
 }
